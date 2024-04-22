@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <!-- Base custom app theme -->
+    <style name="AppTheme" parent="Theme.AppCompat.Light.DarkActionBar">
+        <!-- Customize your theme here. -->
+        <item name="colorPrimary">@color/colorPrimary</item>
+        <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
+        <item name="colorAccent">@color/colorAccent</item>
+    </style>
+
+    <!-- Custom Dark Theme TODO: Figure out better dark theme.... -->
+    <style name="CustomThemeOverlay.Dark" parent="ThemeOverlay.AppCompat">
+        <item name="android:textColor">@android:color/white</item>
+        <item name="android:background">@android:color/black</item>
+    </style>
+
+</resources>

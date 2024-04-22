@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "921911913948",
+    "project_id": "simplenote-684c0",
+    "storage_bucket": "simplenote-684c0.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:921911913948:android:0fad63b508d7d52ba27319",
+        "android_client_info": {
+          "package_name": "edu.cs371m.project.simplenote"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBelNapvXn1iYRQT6_sYV3dVXO8bmqg5DY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

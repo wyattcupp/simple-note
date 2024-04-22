@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    app:startDestination="@id/notesFragment">
+
+    <fragment
+        android:id="@+id/notesFragment"
+        android:name="edu.cs371m.project.simplenote.ui.NotesFragment"
+        android:label="Notes">
+        <argument
+            android:name="folderId"
+            app:argType="string"
+            android:defaultValue="defaultFolderId" />
+        <action
+            android:id="@+id/action_notesFragment_to_editNoteFragment"
+            app:destination="@id/editNoteFragment" />
+        <action
+            android:id="@+id/action_notesFragment_self"
+            app:destination="@id/notesFragment"
+            app:popUpTo="@id/notesFragment"
+            app:popUpToInclusive="true"/>
+    </fragment>
+
+    <fragment
+        android:id="@+id/editNoteFragment"
+        android:name="edu.cs371m.project.simplenote.ui.EditNoteFragment"
+        android:label="Edit note">
+        <argument
+            android:name="noteId"
+            app:argType="string"
+            android:defaultValue="" />  <!-- Default empty string indicates a new note -->
+        <argument
+            android:name="folderId"
+            app:argType="string"
+            android:defaultValue="" />  <!-- Default empty string indicates no specific folder -->
+        <action
+            android:id="@+id/action_editNoteFragment_to_notesFragment"
+            app:destination="@id/notesFragment"
+            app:popUpTo="@id/notesFragment"
+            app:popUpToInclusive="true"/>
+    </fragment>
+</navigation>
