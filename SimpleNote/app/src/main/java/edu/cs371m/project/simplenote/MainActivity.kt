@@ -161,7 +161,8 @@ class MainActivity : AppCompatActivity() {
         val userNameText = headerView.findViewById<TextView>(R.id.userName)
         val userEmailText = headerView.findViewById<TextView>(R.id.userEmail)
 
-        userNameText.text = user.name
+        // check if a user full-name exists, if not, set it to nothing
+        userNameText.text = if (user.name == "User Logged Out") "" else user.name
         userEmailText.text = user.email
     }
 

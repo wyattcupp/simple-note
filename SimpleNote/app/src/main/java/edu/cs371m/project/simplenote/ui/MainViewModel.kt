@@ -23,6 +23,7 @@ class MainViewModel : ViewModel() {
     val loading = MutableLiveData<Boolean>()
     val messageLiveData = MutableLiveData<String>()
     var defaultFolderId: String? = null
+    val defaultFolder = MutableLiveData<Folder?>()
 
     private lateinit var authUser: AuthUser
 
@@ -66,6 +67,7 @@ class MainViewModel : ViewModel() {
         currentUserId = null
         notesLiveData.postValue(emptyList())
         foldersLiveData.postValue(emptyList())
+        authUser.logout()
         Log.d("MVM", "User logged out, cleared user-dependent data")
     }
 
@@ -74,11 +76,12 @@ class MainViewModel : ViewModel() {
         viewModelScope.launch {
             dbHelper.ensureDefaultFolder(userId) { exists, folderId ->
                 if (exists) {
-                    selectedFolder.postValue(Folder(id = folderId, name = "Default"))
+                    val folder = Folder(id = folderId, name = "Default")
+                    selectedFolder.postValue(folder)
+                    defaultFolder.postValue(folder)
                     defaultFolderId = folderId
                     Log.d("MVM", "Default folder exists & set successfully, ID: $folderId")
                 } else {
-                    // Handle failure scenario if needed
                     Log.d("MVM", "Failed to ensure default folder was created/exists")
                 }
             }
@@ -154,7 +157,7 @@ class MainViewModel : ViewModel() {
             loading.value = true
             viewModelScope.launch {
                 dbHelper.getFolders(userId) { folders ->
-                    val filteredFolders = folders?.filter { it.id != defaultFolderId }
+                    val filteredFolders = folders?.filter { it.id != defaultFolderId && it.name != "Default" }
                     // foldersListAdapter.submitList(filteredFolders)
                     foldersLiveData.postValue(filteredFolders)
                     loading.postValue(false)
@@ -263,8 +266,10 @@ class MainViewModel : ViewModel() {
                 if (success) {
                     foldersLiveData.value = foldersLiveData.value?.filterNot { it.id == folderId }
                     // Navigate to default folder after deletion
-                    selectedFolder.postValue(foldersLiveData.value?.find { it.id == defaultFolderId })
-                    fetchNotesForFolder(defaultFolderId ?: "")
+                    selectedFolder.postValue(defaultFolder.value)
+                    defaultFolder.value?.id?.let {
+                        fetchNotesForFolder(it)
+                    }
                     operationStatus.postValue("Folder deleted successfully")
                 } else {
                     operationStatus.postValue("Failed to delete folder")
