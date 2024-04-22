@@ -28,6 +28,7 @@ class NoteListAdapter(private val onNoteClicked: (Note) -> Unit) :
             binding.noteTitle.text =
                 note.title
             binding.notePreview.text = note.content
+
             note.updatedAt?.let {
                 binding.noteDate.text =
                     dateFormatter.format(it.toDate())

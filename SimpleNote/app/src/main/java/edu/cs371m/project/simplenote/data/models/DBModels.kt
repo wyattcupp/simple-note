@@ -26,10 +26,8 @@ data class Folder(
     var name: String = "",
     var createdBy: String = "",
     @ServerTimestamp val createdTimestamp: Timestamp? = null,
-    @ServerTimestamp val updatedTimestamp: Timestamp? = null
+    @ServerTimestamp val updatedAt: Timestamp? = null
 )
-
-
 
 data class Permission(
     val canEdit: Boolean = false,

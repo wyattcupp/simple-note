@@ -3,6 +3,7 @@ package edu.cs371m.project.simplenote.data
 import android.util.Log
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.FieldValue
+import com.google.firebase.firestore.Query
 import edu.cs371m.project.simplenote.data.models.Folder
 import edu.cs371m.project.simplenote.data.models.Note
 import edu.cs371m.project.simplenote.data.models.Permission
@@ -23,6 +24,7 @@ class ViewModelDBHelper {
                 documentReference.update("id", noteId)
                 completion(true)
                 Log.d("DBHelper", "addNote - Success")
+                updateFolderTimestamp(note.folderId)
             }
             .addOnFailureListener {
                 completion(false)
@@ -34,6 +36,7 @@ class ViewModelDBHelper {
     fun getNotes(userId: String, callback: (List<Note>?) -> Unit) {
         db.collection("notes")
             .whereEqualTo("createdBy", userId)
+            .orderBy("updatedAt", Query.Direction.DESCENDING)
             .get()
             .addOnSuccessListener { documents ->
                 val notes =
@@ -51,6 +54,7 @@ class ViewModelDBHelper {
         db.collection("notes")
             .whereEqualTo("createdBy", userId)
             .whereEqualTo("folderId", folderId)
+            .orderBy("updatedAt", Query.Direction.DESCENDING)
             .get()
             .addOnSuccessListener { documents ->
                 val notes =
@@ -72,18 +76,43 @@ class ViewModelDBHelper {
             "content", note.content,
             "updatedAt", FieldValue.serverTimestamp()
         )
-            .addOnSuccessListener { completion(true) }
+            .addOnSuccessListener {
+                completion(true)
+                updateFolderTimestamp(note.folderId)
+            }
             .addOnFailureListener { completion(false) }
     }
 
     // Delete a specific note
-    fun deleteNote(noteId: String, completion: (Boolean) -> Unit) {
-        Log.d("DBHelper", "deleteNote -> noteId=$noteId")
+//    fun deleteNote(noteId: String, completion: (Boolean) -> Unit) {
+//        Log.d("DBHelper", "deleteNote -> noteId=$noteId")
+//
+//        db.collection("notes").document(noteId).delete()
+//            .addOnSuccessListener { completion(true) }
+//            .addOnFailureListener { completion(false) }
+//    }
 
-        db.collection("notes").document(noteId).delete()
-            .addOnSuccessListener { completion(true) }
-            .addOnFailureListener { completion(false) }
+    fun deleteNote(noteId: String, completion: (Boolean) -> Unit) {
+        db.collection("notes").document(noteId).get()
+            .addOnSuccessListener { documentSnapshot ->
+                val note = documentSnapshot.toObject(Note::class.java)
+                db.collection("notes").document(noteId).delete()
+                    .addOnSuccessListener {
+                        // Update folder's timestamp
+                        note?.folderId?.let { updateFolderTimestamp(it) }
+                        completion(true)
+                    }
+                    .addOnFailureListener { e ->
+                        Log.e("DBHelper", "Failed to delete note: ${e.message}", e)
+                        completion(false)
+                    }
+            }
+            .addOnFailureListener { e ->
+                Log.e("DBHelper", "Failed to retrieve note before deletion: ${e.message}", e)
+                completion(false)
+            }
     }
+
 
     // Set permissions for a note
     fun setPermission(noteId: String, userId: String, permission: Permission) {
@@ -115,6 +144,7 @@ class ViewModelDBHelper {
 
         db.collection("folders")
             .whereEqualTo("createdBy", userId)
+            .orderBy("updatedAt", Query.Direction.DESCENDING)
             .get()
             .addOnSuccessListener { documents ->
                 val folders =
@@ -123,7 +153,7 @@ class ViewModelDBHelper {
                 Log.d("DBHelper", "getFolders - Success -> Folders=$folders")
             }
             .addOnFailureListener {
-                Log.d("DBHelper", "Failure -> ${it.message}")
+                Log.d("DBHelper", "getFolders - Failure -> ${it.message}")
                 callback(null)
             }
     }
@@ -180,6 +210,7 @@ class ViewModelDBHelper {
                     .addOnSuccessListener {
                         Log.d("DBHelper", "All notes in folder $folderId deleted successfully")
                         completion(true)
+                        updateFolderTimestamp(folderId)
                     }
                     .addOnFailureListener { e ->
                         Log.e(
@@ -245,7 +276,10 @@ class ViewModelDBHelper {
 
         db.collection("folders").document(folderId)
             .update("name", newName)
-            .addOnSuccessListener { completion(true) }
+            .addOnSuccessListener {
+                completion(true)
+                updateFolderTimestamp(folderId)
+            }
             .addOnFailureListener { completion(false) }
     }
 
@@ -288,6 +322,7 @@ class ViewModelDBHelper {
                 }
                 batch.commit().addOnSuccessListener {
                     completion(true)
+                    updateFolderTimestamp(folderId)
                 }.addOnFailureListener {
                     completion(false)
                 }
@@ -296,4 +331,16 @@ class ViewModelDBHelper {
                 completion(false)
             }
     }
+
+    fun updateFolderTimestamp(folderId: String) {
+        db.collection("folders").document(folderId)
+            .update("updatedAt", FieldValue.serverTimestamp())
+            .addOnSuccessListener {
+                Log.d("DBHelper", "Folder timestamp updated successfully for $folderId")
+            }
+            .addOnFailureListener { e ->
+                Log.e("DBHelper", "Failed to update folder timestamp: ${e.message}", e)
+            }
+    }
+
 }

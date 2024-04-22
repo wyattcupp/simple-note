@@ -8,6 +8,7 @@ import edu.cs371m.project.simplenote.auth.AuthUser
 import edu.cs371m.project.simplenote.data.ViewModelDBHelper
 import edu.cs371m.project.simplenote.data.models.Folder
 import edu.cs371m.project.simplenote.data.models.Note
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 class MainViewModel : ViewModel() {
@@ -58,7 +59,6 @@ class MainViewModel : ViewModel() {
         Log.d("MVM", "Initializing or re-initializing user dependent features for userId=$userId")
         ensureDefaultFolder(userId)
         fetchFolders()
-        //fetchNotes()
         selectedFolder.value?.let { fetchNotesForFolder(it.id) }
     }
 
@@ -95,7 +95,11 @@ class MainViewModel : ViewModel() {
             viewModelScope.launch {
                 dbHelper.addFolder(folder, userId) { success, folderId ->
                     if (success) {
-                        fetchFolders()
+                        viewModelScope.launch {
+                            delay(500)
+                            fetchFolders()
+                        }
+                        //fetchFolders()
                         selectedFolder.postValue(folder)
                         operationStatus.postValue("Folder added successfully")
                     } else {
@@ -157,7 +161,8 @@ class MainViewModel : ViewModel() {
             loading.value = true
             viewModelScope.launch {
                 dbHelper.getFolders(userId) { folders ->
-                    val filteredFolders = folders?.filter { it.id != defaultFolderId && it.name != "Default" }
+                    val filteredFolders =
+                        folders?.filter { it.id != defaultFolderId && it.name != "Default" }
                     // foldersListAdapter.submitList(filteredFolders)
                     foldersLiveData.postValue(filteredFolders)
                     loading.postValue(false)
@@ -175,6 +180,10 @@ class MainViewModel : ViewModel() {
                         if (success) {
                             selectedFolder.value?.let { fetchNotesForFolder(it.id) }  // Refresh list after adding
                             operationStatus.postValue("Note added successfully")
+                            viewModelScope.launch {
+                                delay(500)
+                                fetchFolders()
+                            }
                         } else {
                             operationStatus.postValue("Failed to add note")
                         }
@@ -184,6 +193,10 @@ class MainViewModel : ViewModel() {
                         if (success) {
                             selectedFolder.value?.let { fetchNotesForFolder(it.id) }
                             operationStatus.postValue("Note updated successfully")
+                            viewModelScope.launch {
+                                delay(500)
+                                fetchFolders()
+                            }
                         } else {
                             operationStatus.postValue("Failed to update note")
                         }
@@ -198,6 +211,10 @@ class MainViewModel : ViewModel() {
         selectedNote.value?.id?.let { noteId ->
             deleteNote(noteId)
         }
+    }
+
+    fun resetSelectedNote() {
+        selectedNote.value = null
     }
 
     fun deleteNote(noteId: String) {
@@ -243,7 +260,10 @@ class MainViewModel : ViewModel() {
                             selectedFolder.postValue(updatedFolder)
                         }
                     }
-                    fetchFolders()  // Refresh list after renaming
+                    viewModelScope.launch {
+                        delay(500)
+                        fetchFolders()
+                    }
                     operationStatus.postValue("Folder renamed successfully")
                 } else {
                     operationStatus.postValue("Failed to rename folder")

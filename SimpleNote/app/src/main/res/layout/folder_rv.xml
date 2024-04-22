@@ -8,7 +8,7 @@
     android:clickable="true"
     android:focusable="true"
     android:background="?attr/selectableItemBackground"
-    android:orientation="vertical"
+    android:orientation="horizontal"
     android:paddingStart="20dp"
     android:paddingEnd="20dp"
     android:paddingTop="10dp"
@@ -16,12 +16,21 @@
 
     <TextView
         android:id="@+id/folderName"
-        android:layout_width="match_parent"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
+        android:layout_weight="1"
         android:drawablePadding="20dp"
         android:drawableTint="?attr/colorAccent"
         android:gravity="center_vertical"
         android:textSize="14sp"
-        tools:text="Folder Title"
-        app:drawableStartCompat="@drawable/baseline_folder_24" />
+        app:drawableStartCompat="@drawable/baseline_folder_24"
+        tools:text="Folder Title" />
+
+    <TextView
+        android:id="@+id/folderTimestamp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textSize="12sp"
+        tools:text="MM/dd HH:mm" />
+
 </LinearLayout>

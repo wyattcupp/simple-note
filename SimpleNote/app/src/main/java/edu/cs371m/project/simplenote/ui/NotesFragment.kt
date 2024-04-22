@@ -35,7 +35,7 @@ class NotesFragment : Fragment() {
         setupAddNoteActionButton()
 
         val folderId = arguments?.getString("folderId") ?: "defaultFolderId"
-        viewModel.fetchNotesForFolder(folderId)  // Implement this method in your ViewModel
+        viewModel.fetchNotesForFolder(folderId)
     }
 
     private fun setupRecyclerView() {
@@ -123,9 +123,11 @@ class NotesFragment : Fragment() {
     }
 
     private fun navigateToCreateNote() {
+        viewModel.resetSelectedNote()
         val action = NotesFragmentDirections.actionNotesFragmentToEditNoteFragment("", "")
         findNavController().navigate(action)
     }
+
 
     override fun onDestroyView() {
         super.onDestroyView()
