@@ -225,6 +225,10 @@ class MainViewModel : ViewModel() {
                     notesLiveData.value = notesLiveData.value?.filterNot { it.id == noteId }
                     selectedNote.postValue(null)  // Clear selection after deletion
                     operationStatus.postValue("Note deleted successfully")
+                    viewModelScope.launch {
+                        delay(500)
+                        fetchFolders()
+                    }
                 } else {
                     operationStatus.postValue("Failed to delete note")
                 }
